@@ -1,4 +1,5 @@
 
+import enum
 import json
 import pandas
 import sys 
@@ -10,12 +11,13 @@ def convertListToDict(inputList):
 
     return outputDict
 
-def baseCases(word, symbolsDict):
+
+def breakdown(word, symbolsDict):
     if word == "":
         return []
     if len (word) == 1:
         if word in symbolsDict:
-          return [word]
+           return [word]
         return []
     if len(word) == 2:
         if word in symbolsDict:
@@ -24,41 +26,39 @@ def baseCases(word, symbolsDict):
             return [word[0], word[1]]
         return []
 
-def breakdown(word, symbolsDict):
-    if baseCases(word, symbolsDict) == []:
-        return []
-    
-    #so now we know, word is greater than 2 letters
-    breakdowns = [[]] #we treat 0 not as the corresponding to the 0th value, but empty string. So breakdowns will end up being len(word) + 1 
-
+    breakdowns = [[]]
     if word[0] in symbolsDict:
-        breakdowns.append([word[0]])
-    else: 
+        breakdowns.append([[word[0]]])
+    # elif word[:2] in symbolsDict: 
+    #     breakdowns.append([])
+    #     breakdowns.append([word[:2]])
+    else:
         breakdowns.append([[]])
 
-    [[], []]
 
-    for i, letter in enumerate(word[1:]):
+    for i, letter in enumerate(word[1:], 1):
         onePreviousCombos = breakdowns[i].copy()
         twoPreviousCombos = breakdowns[i-1].copy()
-
         newCombos = []
         doubleCharPotentialSymbol = word[i-1] + letter
 
         if letter in symbolsDict:
+            if onePreviousCombos == []:
+                newCombos.append([letter])
             for combo in onePreviousCombos:
-                newCombos.append(onePreviousCombos + [letter])
+                newCombos.append(combo + [letter])
         
         if doubleCharPotentialSymbol in symbolsDict:
+
+            if twoPreviousCombos == []:
+                newCombos.append([doubleCharPotentialSymbol])
             for combo in twoPreviousCombos:
-                newCombos.append(twoPreviousCombos + [doubleCharPotentialSymbol])
+                newCombos.append(combo + [doubleCharPotentialSymbol])
+        if newCombos == [] and breakdowns[-1] == [] and i != 1:
+            return []
 
-        if newCombos == [] and breakdowns[-1] == []:
-            return 
-
-        breakdowns += newCombos
-
-    return breakdowns[-1]
+        breakdowns.append(newCombos)
+    return breakdowns[-1][-1]
 
 def runBreakdown(word):
     atomicInfoTable = pandas.read_csv("atomic-info.csv")
@@ -71,9 +71,6 @@ def runBreakdown(word):
     return breakdown(word, symbolDict)
 
 def convertListToJson(breakdown):
-    # if breakdown == []:
-    #     print(json.dumps({"breakdown": []}))
-    #     return
     output = {"breakdown": breakdown}
     print(json.dumps(output))
 

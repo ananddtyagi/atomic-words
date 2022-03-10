@@ -19,7 +19,6 @@ async function generateElementalBreakdown() {
   }).then((response) => {
     return response.json();
   });
-
-  console.log(response);
-  elementalBreakdown.innerHTML = response.json();
+  console.log(response.breakdown);
+  elementalBreakdown.innerHTML = response.breakdown;
 }
